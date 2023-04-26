@@ -17,4 +17,8 @@ pub const Renderer = struct {
         _ = sdl.SDL_GetRendererOutputSize(renderer, &size.*.w, &size.*.h);
         return Renderer{ .renderer = renderer, .size = size };
     }
+
+    pub fn dinit(self: @This(), allocator: std.mem.Allocator) void {
+        allocator.destroy(self.size);
+    }
 };

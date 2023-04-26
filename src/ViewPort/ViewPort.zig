@@ -27,10 +27,6 @@ pub const ViewPort = struct {
         return ViewPort{ .size = size, .view = texture };
     }
 
-    pub fn dinit(self: @This(), allocator: *std.mem.Allocator) !void {
-        allocator.free(self.tiles);
-    }
-
     pub fn setView(self: @This(), renderer: *sdl.SDL_Renderer, tileset: Tileset, tiles: []u8) !void {
         _ = sdl.SDL_SetRenderTarget(renderer, self.view);
         for (tiles, 0..) |tileVal, i| {
@@ -43,11 +39,13 @@ pub const ViewPort = struct {
         _ = sdl.SDL_SetRenderTarget(renderer, null);
     }
 
-    pub fn setBorders(self: @This(), renderer: *sdl.SDL_Renderer, tileset: Tileset, tiles: []u8) !void {
+    pub fn setBorders(self: @This(), renderer: *sdl.SDL_Renderer, tileset: *const Tileset, tiles: []u8) !void {
+        std.debug.print("Count: {}", .{tileset.*.tiles.count()});
         const topTile = try tileset.getTile(tiles[0]);
         const rightTile = try tileset.getTile(tiles[2]);
         const botTile = try tileset.getTile(tiles[4]);
         const leftTile = try tileset.getTile(tiles[6]);
+        std.debug.print("Count: {}", .{tileset.tiles.count()});
         _ = sdl.SDL_SetRenderTarget(renderer, self.view);
         // walk the top row
         for (0..@divFloor(@intCast(usize, self.size.w), tileset.tileSize)) |i| {
@@ -64,18 +62,25 @@ pub const ViewPort = struct {
             var size = sdl.SDL_Rect{ .x = @intCast(c_int, i * tileset.tileSize), .y = self.size.h - tileset.tileSize, .w = tileset.tileSize, .h = tileset.tileSize };
             _ = sdl.SDL_RenderCopy(renderer, botTile, null, &size);
         }
+        std.debug.print("Count good: {}", .{tileset.tiles.count()});
         // walk the left side
         for (1..@divFloor(@intCast(usize, self.size.h), tileset.tileSize)) |i| {
             var size = sdl.SDL_Rect{ .x = 0, .y = @intCast(c_int, i * tileset.tileSize), .w = tileset.tileSize, .h = tileset.tileSize };
             _ = sdl.SDL_RenderCopy(renderer, leftTile, null, &size);
         }
+        std.debug.print("Count bad: {}", .{tileset.tiles.count()});
         // The four corners
         for (0..4) |i| {
             var size = sdl.SDL_Rect{ .x = @intCast(c_int, i % 2) * (self.size.w - tileset.tileSize), .y = @intCast(c_int, @divFloor(i, 2)) * (self.size.h - tileset.tileSize), .w = tileset.tileSize, .h = tileset.tileSize };
             std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
-            _ = sdl.SDL_RenderCopy(renderer, try tileset.getTile(tiles[i * 2 + 1]), null, &size);
+            std.debug.print("Count: {}", .{tileset.tiles.count()});
+            _ = sdl.SDL_RenderCopy(renderer, try tileset.getTile(tiles[(i * 2) + 1]), null, &size);
         }
 
         _ = sdl.SDL_SetRenderTarget(renderer, null);
+    }
+
+    pub fn dinit(self: @This(), allocator: std.mem.Allocator) void {
+        allocator.destroy(self.size);
     }
 };

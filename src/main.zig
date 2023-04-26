@@ -13,6 +13,7 @@ const ViewPort = @import("./ViewPort/ViewPort.zig").ViewPort;
 const generateStatic = @import("./utils.zig").generateStatic;
 
 pub fn main() !void {
+    defer _ = gpa.detectLeaks();
     if (sdl.SDL_Init(sdl.SDL_INIT_VIDEO) != 0) {
         print("Failed to initialize SDL: {*}\n", .{sdl.SDL_GetError()});
         return error.SDLInitializationFailed;
@@ -37,13 +38,16 @@ pub fn main() !void {
 
     // Create tileset from filepath
     const tileset = try Tileset.init(allocator, gameRenderer.renderer, imageFullPath, 20);
+    defer tileset.dinit(allocator);
+    print("Main Count: {}\n", .{tileset.tiles.count()});
 
     // Create ViewPort
     const viewPort = try ViewPort.init(allocator, gameRenderer.renderer, gameRenderer.size.w, @divFloor(gameRenderer.size.h, 2), 20);
-
     // Generate a bordered rectangle
+
+    print("Main Count: {}\n", .{tileset.tiles.count()});
     var tiles = [8]u8{ 196, 218, 179, 191, 196, 192, 179, 217 };
-    try viewPort.setBorders(gameRenderer.renderer, tileset, &tiles);
+    try viewPort.setBorders(gameRenderer.renderer, &tileset, &tiles);
     // Prepare and render ViewPort
     try GameWindow.prepareTexture(gameRenderer.renderer, viewPort.view, viewPort.size);
     GameWindow.renderTexture(gameRenderer.renderer);
@@ -58,5 +62,7 @@ pub fn main() !void {
             }
         }
     }
+    gameRenderer.dinit(allocator);
+    viewPort.dinit(allocator);
     std.debug.print("works\n", .{});
 }
