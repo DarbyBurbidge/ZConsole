@@ -6,10 +6,11 @@ const sdl = @cImport({
 });
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
-const Tileset = @import("./ViewPort/Tileset.zig").Tileset;
-const GameWindow = @import("./Window/Window.zig").Window;
-const GameRenderer = @import("./Renderer/Renderer.zig").Renderer;
-const ViewPort = @import("./ViewPort/ViewPort.zig").ViewPort;
+const Game = @import("./Game/Game.zig").Game;
+const Tileset = @import("./View/Tileset.zig").Tileset;
+const Window = @import("./Window/Window.zig").Window;
+const Renderer = @import("./Renderer/Renderer.zig").Renderer;
+const View = @import("./View/View.zig").View;
 const generateStatic = @import("./utils.zig").generateStatic;
 
 pub fn main() !void {
@@ -21,8 +22,8 @@ pub fn main() !void {
     defer sdl.SDL_Quit();
 
     // Create window and renderer
-    const gameWindow = try GameWindow.init("My Game");
-    const gameRenderer = try GameRenderer.init(allocator, gameWindow.window);
+    var window = try Window.init("My Game");
+    var renderer = try Renderer.init(window.window);
 
     const rootDir = std.mem.span(sdl.SDL_GetBasePath());
     print("{s}\n", .{rootDir});
@@ -37,32 +38,18 @@ pub fn main() !void {
     defer allocator.free(imageFullPath);
 
     // Create tileset from filepath
-    const tileset = try Tileset.init(allocator, gameRenderer.renderer, imageFullPath, 20);
-    defer tileset.dinit(allocator);
+    var tileset = try Tileset.init(allocator, renderer.renderer, imageFullPath, 20);
+    defer tileset.dinit();
     print("Main Count: {}\n", .{tileset.tiles.count()});
 
-    // Create ViewPort
-    const viewPort = try ViewPort.init(allocator, gameRenderer.renderer, gameRenderer.size.w, @divFloor(gameRenderer.size.h, 2), 20);
-    // Generate a bordered rectangle
+    // Create ViewPort that covers the top half of the screen
+    var view = try View.init(renderer.renderer, 0, 0, renderer.size.w, @divFloor(renderer.size.h, 2), 20);
+    // Create array of all tilesets and views
+    var tilesets = [_]*Tileset{&tileset};
+    var views = [_]*View{&view};
+    // Initialize game
+    var game = Game.init(allocator, &window, &renderer, &tilesets, &views);
+    try game.gameLoop();
 
-    print("Main Count: {}\n", .{tileset.tiles.count()});
-    var tiles = [8]u8{ 196, 218, 179, 191, 196, 192, 179, 217 };
-    try viewPort.setBorders(gameRenderer.renderer, &tileset, &tiles);
-    // Prepare and render ViewPort
-    try GameWindow.prepareTexture(gameRenderer.renderer, viewPort.view, viewPort.size);
-    GameWindow.renderTexture(gameRenderer.renderer);
-
-    // Wait for signal to close
-    var event: sdl.SDL_Event = undefined;
-    var quit = false;
-    while (!quit) {
-        while (sdl.SDL_PollEvent(&event) != 0) {
-            if (event.type == sdl.SDL_QUIT) {
-                quit = true;
-            }
-        }
-    }
-    gameRenderer.dinit(allocator);
-    viewPort.dinit(allocator);
     std.debug.print("works\n", .{});
 }

@@ -9,24 +9,30 @@ const Allocator = std.mem.Allocator;
 const ViewPortError = error{ InvalidSize, InvalidTileArray };
 
 const ViewType = enum { Console, GameScreen, Menu };
+// View is meant to be any in game window that is independent of other windows
+// i.e. A menu, The viewport into the game world, the message console.
+// They are combined and rendered to a Window, which is what is sent to screen
 
-pub const ViewPort = struct {
-    size: *sdl.SDL_Rect, // in px
+pub const View = struct {
+    size: sdl.SDL_Rect, // in px
     view: *sdl.SDL_Texture,
 
-    pub fn init(allocator: std.mem.Allocator, renderer: *sdl.SDL_Renderer, width: c_int, height: c_int, tileSize: u8) !ViewPort {
+    // Defines the position and size of the View
+    pub fn init(renderer: *sdl.SDL_Renderer, x: c_int, y: c_int, width: c_int, height: c_int, tileSize: u8) !View {
         if (@mod(width, tileSize) != 0 or @mod(height, tileSize) != 0) {
             return ViewPortError.InvalidSize;
         }
-        const size = try allocator.create(sdl.SDL_Rect);
-        size.x = 0;
-        size.y = 0;
-        size.w = width;
-        size.h = height;
+        const size = sdl.SDL_Rect{
+            .x = x,
+            .y = y,
+            .w = width,
+            .h = height,
+        };
         const texture = sdl.SDL_CreateTexture(renderer, sdl.SDL_PIXELFORMAT_RGBA8888, sdl.SDL_TEXTUREACCESS_TARGET, width, height) orelse return error.TextureLoad;
-        return ViewPort{ .size = size, .view = texture };
+        return View{ .size = size, .view = texture };
     }
 
+    // Takes an array of characters and a tileset and populates the View with the associated tiles
     pub fn setView(self: @This(), renderer: *sdl.SDL_Renderer, tileset: Tileset, tiles: []u8) !void {
         _ = sdl.SDL_SetRenderTarget(renderer, self.view);
         for (tiles, 0..) |tileVal, i| {
@@ -38,8 +44,9 @@ pub const ViewPort = struct {
         }
         _ = sdl.SDL_SetRenderTarget(renderer, null);
     }
-
-    pub fn setBorders(self: @This(), renderer: *sdl.SDL_Renderer, tileset: *const Tileset, tiles: []u8) !void {
+    // Takes an array of tile values and creates a border
+    // NOTE: likely to be removed as it is very limited in utility
+    pub fn setBorders(self: *@This(), renderer: *sdl.SDL_Renderer, tileset: *const Tileset, tiles: []u8) !void {
         std.debug.print("Count: {}", .{tileset.*.tiles.count()});
         const topTile = try tileset.getTile(tiles[0]);
         const rightTile = try tileset.getTile(tiles[2]);
@@ -78,9 +85,5 @@ pub const ViewPort = struct {
         }
 
         _ = sdl.SDL_SetRenderTarget(renderer, null);
-    }
-
-    pub fn dinit(self: @This(), allocator: std.mem.Allocator) void {
-        allocator.destroy(self.size);
     }
 };

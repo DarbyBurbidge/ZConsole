@@ -10,8 +10,8 @@ const print = std.debug.print;
 const TilesetError = error{ TextureLoad, TileLoad, TileTransfer };
 
 pub const Tileset = struct {
-    tileset: ?*sdl.SDL_Texture,
-    tiles: *std.AutoHashMap(u8, *sdl.SDL_Texture),
+    tileset: *sdl.SDL_Texture,
+    tiles: std.AutoHashMap(u8, *sdl.SDL_Texture),
     tileSize: u8,
     width: u32,
     height: u32,
@@ -81,22 +81,20 @@ pub const Tileset = struct {
         if (renderer == undefined) {
             return error.MissingRenderer;
         }
-        var tiles = try allocator.create(std.AutoHashMap(u8, *sdl.SDL_Texture));
-        tiles.* = std.AutoHashMap(u8, *sdl.SDL_Texture).init(allocator);
+        var tiles = std.AutoHashMap(u8, *sdl.SDL_Texture).init(allocator);
         const tileset = try setTileset(renderer, path);
-        try setTiles(renderer, tileset, tileSize, tiles);
+        try setTiles(renderer, tileset, tileSize, &tiles);
         print("Init scope Count: {}", .{tiles.count()});
         var tilesetSize = sdl.SDL_Rect{ .x = 0, .y = 0, .w = 0, .h = 0 };
         _ = sdl.SDL_QueryTexture(tileset, null, null, &tilesetSize.w, &tilesetSize.h);
         return Tileset{ .tileset = tileset, .tiles = tiles, .width = @intCast(u32, tilesetSize.w), .height = @intCast(u32, tilesetSize.h), .tileSize = tileSize };
     }
 
-    pub fn dinit(self: @This(), allocator: std.mem.Allocator) void {
+    pub fn dinit(self: *Tileset) void {
         sdl.SDL_DestroyTexture(self.tileset);
         for (0..self.tiles.count()) |i| {
             sdl.SDL_DestroyTexture(self.tiles.get(@truncate(u8, i)));
-            self.tiles.put(@truncate(u8, i), undefined) catch {};
         }
-        allocator.destroy(self.tiles);
+        self.tiles.deinit();
     }
 };

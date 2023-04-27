@@ -6,7 +6,7 @@ const sdl = @cImport({
 });
 
 const Renderer = @import("./Renderer/Renderer.zig").Renderer;
-const Tileset = @import("./ViewPort/Tileset.zig").Tileset;
+const Tileset = @import("./View/Tileset.zig").Tileset;
 const Window = @import("./Window/Window.zig").Window;
 
 // An initial test to see if I could generate static

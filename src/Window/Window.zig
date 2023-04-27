@@ -5,9 +5,6 @@ const sdl = @cImport({
     @cInclude("SDL_image.h");
 });
 
-const ViewPort = @import("../ViewPort").ViewPort;
-const Console = @import("../Console").Console;
-
 const print = std.debug.print;
 
 pub const Window = struct {
