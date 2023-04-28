@@ -19,5 +19,4 @@ Inspired by [SadConsole](https://sadconsole.com/) and [libtcod](https://libtcod.
 
 #### Licenses:
 ##### <img alt="Z" src="https://raw.githubusercontent.com/ziglang/logo/master/zig-mark.svg" width="20" style="margin-bottom: -.25rem"/>Console: Zlib
-
 ##### SDL2: Zlib
