@@ -1,0 +1,19 @@
+# <img alt="Z" src="https://raw.githubusercontent.com/ziglang/logo/master/zig-mark.svg" width="50" style="margin-bottom: -.75rem"/>Console
+## A ZIG Console library using SDL
+
+### Purpose:
+* To get aquainted with the Zig language.
+* To learn more about Game development.
+* To write a library that I'm comfortable using.
+* To practice writing robust, reusable code for others.
+
+As a solo developer I haven't had much experience writing code that other developers will have to work with. As such, I think it's important to work on projects where the intended use is explicitly that it will be used by others. 
+
+Inspired by [SadConsole](https://sadconsole.com/) and [libtcod](https://libtcod.readthedocs.io/en/latest/).
+
+#### Current Goals:
+* Clarify what the Game object should do and it's interface.
+* Articulate what the key components are (ie renderer, input handler, etc.).
+* Figure out exactly where the SDL_Events end and GameEvents start.
+* How do I want people (including myself) to interact with the library.
+

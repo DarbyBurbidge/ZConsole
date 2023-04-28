@@ -59,6 +59,7 @@ pub fn main() !void {
     std.debug.print("works\n", .{});
 }
 
+// test function for utilizing eventMap
 fn exit(sdlEvent: sdl.SDL_Event) []Event {
     if (sdlEvent.key.keysym.sym == sdl.SDLK_ESCAPE) {
         return &[_]Event{
