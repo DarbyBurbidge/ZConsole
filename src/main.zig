@@ -54,6 +54,7 @@ pub fn main() !void {
     try eventMap.put(sdl.SDL_KEYDOWN, &exit);
     defer eventMap.deinit();
     var game = Game.init(allocator, &window, &renderer, &tilesets, &views, &eventMap);
+    defer game.deinit();
     try game.gameLoop();
 
     std.debug.print("works\n", .{});

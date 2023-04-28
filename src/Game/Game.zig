@@ -39,6 +39,10 @@ pub const Game = struct {
         return Game{ .window = window, .renderer = renderer, .tilesets = tilesets, .views = views, .quit = false, .events = queue, .eventMap = eventMap };
     }
 
+    pub fn deinit(self: *@This()) void {
+        self.events.deinit();
+    }
+
     /// Starts the game loop
     /// calls getUserInput(), update(), render()
     /// in that order
