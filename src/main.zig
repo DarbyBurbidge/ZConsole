@@ -11,6 +11,7 @@ const Tileset = @import("./View/Tileset.zig").Tileset;
 const Window = @import("./Window/Window.zig").Window;
 const Renderer = @import("./Renderer/Renderer.zig").Renderer;
 const View = @import("./View/View.zig").View;
+const Event = @import("./Event/Event.zig").Event;
 const generateStatic = @import("./utils.zig").generateStatic;
 
 pub fn main() !void {
@@ -48,8 +49,21 @@ pub fn main() !void {
     var tilesets = [_]*Tileset{&tileset};
     var views = [_]*View{&view};
     // Initialize game
-    var game = Game.init(allocator, &window, &renderer, &tilesets, &views);
+    var eventMap = std.AutoHashMap(sdl.SDL_EventType, *const fn (sdlEvent: sdl.SDL_Event) []Event).init(allocator);
+
+    try eventMap.put(sdl.SDL_KEYDOWN, &exit);
+    defer eventMap.deinit();
+    var game = Game.init(allocator, &window, &renderer, &tilesets, &views, &eventMap);
     try game.gameLoop();
 
     std.debug.print("works\n", .{});
+}
+
+fn exit(sdlEvent: sdl.SDL_Event) []Event {
+    if (sdlEvent.key.keysym.sym == sdl.SDLK_ESCAPE) {
+        return &[_]Event{
+            Event.Exit(),
+        };
+    }
+    return &[_]Event{};
 }

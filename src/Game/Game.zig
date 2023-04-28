@@ -9,7 +9,9 @@ const Window = @import("../Window/Window.zig").Window;
 const Renderer = @import("../Renderer/Renderer.zig").Renderer;
 const Tileset = @import("../View/Tileset.zig").Tileset;
 const View = @import("../View/View.zig").View;
-const Event = @import("../Event/Event.zig").Event;
+const EventFile = @import("../Event/Event.zig");
+const Event = EventFile.Event;
+const EventType = EventFile.EventType;
 
 fn lessThan(context: void, a: Event, b: Event) std.math.Order {
     _ = context;
@@ -28,36 +30,45 @@ pub const Game = struct {
 
     quit: bool,
     events: std.PriorityQueue(Event, void, lessThan),
+    eventMap: *std.AutoHashMap(sdl.SDL_EventType, *const fn (event: sdl.SDL_Event) []Event),
 
-    /// Intializes Game with a Window, Renderer, array of Tilesets, and an array of Views
-    ///
-    pub fn init(allocator: std.mem.Allocator, window: *Window, renderer: *Renderer, tilesets: []*Tileset, views: []*View) Game {
+    /// Intializes Game
+    /// returns: Game{.window, .renderer, .tilesets, .views, .quit: bool, .events: PriorityQueue}
+    pub fn init(allocator: std.mem.Allocator, window: *Window, renderer: *Renderer, tilesets: []*Tileset, views: []*View, eventMap: *std.AutoHashMap(sdl.SDL_EventType, *const fn (event: sdl.SDL_Event) []Event)) Game {
         const queue = std.PriorityQueue(Event, void, lessThan).init(allocator, undefined);
-        return Game{ .window = window, .renderer = renderer, .tilesets = tilesets, .views = views, .quit = false, .events = queue };
+        return Game{ .window = window, .renderer = renderer, .tilesets = tilesets, .views = views, .quit = false, .events = queue, .eventMap = eventMap };
     }
 
-    pub fn deinit() !void {}
-
+    /// Starts the game loop
+    /// calls getUserInput(), update(), render()
+    /// in that order
     pub fn gameLoop(self: *@This()) !void {
         // Wait for signal to close
         while (!self.quit) {
-            self.getUserInput();
+            try self.input();
             self.update();
             self.render();
         }
     }
 
-    fn getUserInput(self: *@This()) void {
+    fn input(self: *@This()) !void {
         var awaitingInput = true;
-        var event: sdl.SDL_Event = undefined;
+        var sdlEvent: sdl.SDL_Event = undefined;
         while (awaitingInput == true) {
-            _ = sdl.SDL_PollEvent(&event);
-            if (event.type == sdl.SDL_QUIT) {
+            _ = sdl.SDL_PollEvent(&sdlEvent);
+            if (sdlEvent.type == sdl.SDL_QUIT) {
                 self.quit = true;
                 awaitingInput = false;
             }
-            if (event.type == sdl.SDL_KEYDOWN) {
-                self.handleKeyInput(event);
+            if (self.eventMap.contains(sdlEvent.type)) {
+                const eventConverter = self.eventMap.get(sdlEvent.type) orelse {
+                    return error.MissingSDLEventHandler;
+                };
+                print("Function: {}, EventType: {}, Key: {}", .{ eventConverter, sdlEvent.type, sdlEvent.key.keysym.sym });
+                const gameEvents = eventConverter(sdlEvent);
+                for (gameEvents) |gameEvent| {
+                    try self.events.add(gameEvent);
+                }
                 awaitingInput = false;
             }
         }
@@ -71,7 +82,7 @@ pub const Game = struct {
     pub fn update(self: *@This()) void {
         var iter = self.events.iterator();
         while (iter.next()) |event| {
-            self.processEvent(event);
+            self.processGameEvent(event);
         }
         var tiles = [8]u8{ 196, 218, 179, 191, 196, 192, 179, 217 };
         try self.views[0].setBorders(self.renderer.renderer, self.tilesets[0], &tiles);
@@ -86,8 +97,14 @@ pub const Game = struct {
         }
     }
 
-    fn processEvent(self: *@This(), event: Event) void {
-        _ = self;
-        print("Event Fired: {}\n", .{event});
+    fn processGameEvent(self: *@This(), event: Event) void {
+        switch (event.type) {
+            EventType.Exit => {
+                self.quit = true;
+            },
+            EventType.Null => {
+                // do nothing
+            },
+        }
     }
 };
