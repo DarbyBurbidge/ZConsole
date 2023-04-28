@@ -1,3 +1,7 @@
+// ZConsole falls under the ZLIB License
+// The license can be found in the root directory
+// Copyright (c) 2023 DarbyBurbidge
+
 pub const Event = struct {
     priority: u8,
     type: EventType,
