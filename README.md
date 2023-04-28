@@ -18,6 +18,6 @@ Inspired by [SadConsole](https://sadconsole.com/) and [libtcod](https://libtcod.
 * Flesh out how I want people (including myself) to use the library.
 
 #### Licenses:
-<img alt="Z" src="https://raw.githubusercontent.com/ziglang/logo/master/zig-mark.svg" width="20" style="margin-bottom: -.3rem"/>Console: Zlib
+##### <img alt="Z" src="https://raw.githubusercontent.com/ziglang/logo/master/zig-mark.svg" width="20" style="margin-bottom: -.35rem"/><span style="font-weight: normal">Console: Zlib</span>
 
-SDL2: Zlib
+##### <span style="font-weight: normal">SDL2: Zlib</span>
