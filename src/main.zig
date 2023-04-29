@@ -68,7 +68,7 @@ pub fn main() !void {
 fn exit(sdlEvent: sdl.SDL_Event) []Event {
     if (sdlEvent.key.keysym.sym == sdl.SDLK_ESCAPE) {
         return &[_]Event{
-            Event.Exit(),
+            Event.Close(),
         };
     }
     return &[_]Event{};

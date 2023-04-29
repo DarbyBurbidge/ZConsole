@@ -107,7 +107,11 @@ pub const Game = struct {
 
     fn processGameEvent(self: *@This(), event: Event) void {
         switch (event.type) {
-            EventType.Exit => {
+            EventType.Game => {},
+            EventType.Keyboard => {},
+            EventType.MouseClick => {},
+            EventType.MouseMove => {},
+            EventType.Close => {
                 self.quit = true;
             },
             EventType.Null => {
