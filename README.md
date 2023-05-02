@@ -12,7 +12,6 @@ As a solo developer I haven't had much experience writing code that other develo
 Inspired by [SadConsole](https://sadconsole.com/) and [libtcod](https://libtcod.readthedocs.io/en/latest/).
 
 #### Current Goals:
-* Clarify what the Game object should do and it's interface.
 * Articulate what the key components are (ie renderer, input handler, etc.).
 * Figure out exactly where the SDL_Events end and GameEvents start.
 * Flesh out how I want people (including myself) to use the library.

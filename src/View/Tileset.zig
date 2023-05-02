@@ -7,7 +7,6 @@ const sdl = @cImport({
     @cInclude("SDL.h");
     @cInclude("SDL_image.h");
 });
-const Errors = @import("../errors.zig");
 
 const print = std.debug.print;
 
@@ -21,20 +20,20 @@ pub const Tileset = struct {
     height: u32,
 
     pub fn getTile(self: @This(), tile: u8) !*sdl.SDL_Texture {
-        print("Get Tile: {}, Count: {}\n", .{ tile, self.tiles.count() });
+        // print("Get Tile: {}, Count: {}\n", .{ tile, self.tiles.count() });
         return self.tiles.get(tile) orelse undefined;
     }
 
     fn setTileset(renderer: ?*sdl.SDL_Renderer, path: []const u8) !*sdl.SDL_Texture {
         if (sdl.IMG_Init(sdl.IMG_INIT_PNG) == 0) {
-            print("Failed to initialize SDL_Image: {*}\n", .{sdl.IMG_GetError()});
+            // print("Failed to initialize SDL_Image: {*}\n", .{sdl.IMG_GetError()});
             return error.SDLInitializationFailed;
         }
         defer sdl.IMG_Quit();
 
         const texture = sdl.IMG_LoadTexture(renderer, @ptrCast([*c]const u8, path)) orelse {
-            print("{*}", .{sdl.IMG_GetError()});
-            return TilesetError.TextureLoad;
+            // print("{*}", .{sdl.IMG_GetError()});
+            return error.TextureLoad;
         };
         return texture;
     }
@@ -64,18 +63,18 @@ pub const Tileset = struct {
                 idx += 1;
             }
         }
-        print("{}", .{tileMap.count()});
+        // print("{}", .{tileMap.count()});
     }
 
     fn createTileTexture(renderer: *sdl.SDL_Renderer, src: *sdl.SDL_Texture, tileRect: *const sdl.SDL_Rect) !*sdl.SDL_Texture {
         const newTile = sdl.SDL_CreateTexture(renderer, sdl.SDL_PIXELFORMAT_RGBA8888, sdl.SDL_TEXTUREACCESS_TARGET, tileRect.w, tileRect.h) orelse return error.CreationFailed;
         if (sdl.SDL_SetRenderTarget(renderer, newTile) != 0) {
-            return Errors.Renderer.RenderTarget;
+            return error.RenderTarget;
         }
 
         _ = sdl.SDL_RenderCopy(renderer, src, tileRect, null);
         if (sdl.SDL_SetRenderTarget(renderer, null) != 0) {
-            return Errors.Renderer.RenderTarget;
+            return error.RenderTarget;
         }
 
         return newTile;
@@ -88,7 +87,7 @@ pub const Tileset = struct {
         var tiles = std.AutoHashMap(u8, *sdl.SDL_Texture).init(allocator);
         const tileset = try setTileset(renderer, path);
         try setTiles(renderer, tileset, tileSize, &tiles);
-        print("Init scope Count: {}", .{tiles.count()});
+        // print("Init scope Count: {}", .{tiles.count()});
         var tilesetSize = sdl.SDL_Rect{ .x = 0, .y = 0, .w = 0, .h = 0 };
         _ = sdl.SDL_QueryTexture(tileset, null, null, &tilesetSize.w, &tilesetSize.h);
         return Tileset{ .tileset = tileset, .tiles = tiles, .width = @intCast(u32, tilesetSize.w), .height = @intCast(u32, tilesetSize.h), .tileSize = tileSize };

@@ -43,7 +43,7 @@ pub const View = struct {
             const tile = try tileset.getTile(tileVal);
             var size = sdl.SDL_Rect{ .x = @mod(@intCast(c_int, i) * 20, self.size.w), .y = @divFloor(@truncate(u16, i) * 20, self.size.w), .w = tileset.tileSize, .h = tileset.tileSize };
 
-            std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
+            //std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
             _ = sdl.SDL_RenderCopy(renderer, tile, null, &size);
         }
         _ = sdl.SDL_SetRenderTarget(renderer, null);
@@ -51,12 +51,12 @@ pub const View = struct {
     // Takes an array of tile values and creates a border
     // NOTE: likely to be removed as it is very limited in utility
     pub fn setBorders(self: *@This(), renderer: *sdl.SDL_Renderer, tileset: *const Tileset, tiles: []u8) !void {
-        std.debug.print("Count: {}", .{tileset.*.tiles.count()});
+        //std.debug.print("Count: {}", .{tileset.*.tiles.count()});
         const topTile = try tileset.getTile(tiles[0]);
         const rightTile = try tileset.getTile(tiles[2]);
         const botTile = try tileset.getTile(tiles[4]);
         const leftTile = try tileset.getTile(tiles[6]);
-        std.debug.print("Count: {}", .{tileset.tiles.count()});
+        //std.debug.print("Count: {}", .{tileset.tiles.count()});
         _ = sdl.SDL_SetRenderTarget(renderer, self.view);
         // walk the top row
         for (0..@divFloor(@intCast(usize, self.size.w), tileset.tileSize)) |i| {
@@ -73,18 +73,18 @@ pub const View = struct {
             var size = sdl.SDL_Rect{ .x = @intCast(c_int, i * tileset.tileSize), .y = self.size.h - tileset.tileSize, .w = tileset.tileSize, .h = tileset.tileSize };
             _ = sdl.SDL_RenderCopy(renderer, botTile, null, &size);
         }
-        std.debug.print("Count good: {}", .{tileset.tiles.count()});
+        //std.debug.print("Count good: {}", .{tileset.tiles.count()});
         // walk the left side
         for (1..@divFloor(@intCast(usize, self.size.h), tileset.tileSize)) |i| {
             var size = sdl.SDL_Rect{ .x = 0, .y = @intCast(c_int, i * tileset.tileSize), .w = tileset.tileSize, .h = tileset.tileSize };
             _ = sdl.SDL_RenderCopy(renderer, leftTile, null, &size);
         }
-        std.debug.print("Count bad: {}", .{tileset.tiles.count()});
+        //std.debug.print("Count bad: {}", .{tileset.tiles.count()});
         // The four corners
         for (0..4) |i| {
             var size = sdl.SDL_Rect{ .x = @intCast(c_int, i % 2) * (self.size.w - tileset.tileSize), .y = @intCast(c_int, @divFloor(i, 2)) * (self.size.h - tileset.tileSize), .w = tileset.tileSize, .h = tileset.tileSize };
-            std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
-            std.debug.print("Count: {}", .{tileset.tiles.count()});
+            //std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
+            //std.debug.print("Count: {}", .{tileset.tiles.count()});
             _ = sdl.SDL_RenderCopy(renderer, try tileset.getTile(tiles[(i * 2) + 1]), null, &size);
         }
 

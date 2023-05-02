@@ -8,6 +8,11 @@ const sdl = @cImport({
 const Renderer = @import("./Renderer/Renderer.zig").Renderer;
 const Tileset = @import("./View/Tileset.zig").Tileset;
 const Window = @import("./Window/Window.zig").Window;
+const Game = @import("./Game/Game.zig").Game;
+const EventFile = @import("./Input/Event.zig");
+const Event = EventFile.Event;
+const EventData = EventFile.EventData;
+const EventType = EventFile.EventType;
 
 // An initial test to see if I could generate static
 pub fn generateStatic(renderer: Renderer, tileset: Tileset) !void {
