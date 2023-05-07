@@ -12,7 +12,7 @@ pub const InputManager = struct {
     pub fn getInputEvent() ?Event {
         var sdlEvent: sdl.SDL_Event = undefined;
         while (sdl.SDL_PollEvent(&sdlEvent) != 0) {
-            if (sdlEvent.type == sdl.SDL_KEYDOWN or sdlEvent.type == sdl.SDL_KEYUP) {
+            if (sdlEvent.type == sdl.SDL_KEYDOWN) {
                 return Event.keyboard(sdlEvent.key) catch |err| {
                     print("Unable to parse Input Event: {?}", .{err});
                     return undefined;

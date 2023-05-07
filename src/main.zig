@@ -48,7 +48,7 @@ pub fn main() !void {
     print("Main Count: {}\n", .{tileset.tiles.count()});
 
     // Create ViewPort that covers the top half of the screen
-    var view = try View.init(renderer.renderer, 0, 0, renderer.size.w, @divFloor(renderer.size.h, 2), 20);
+    var view = try View.init(renderer.renderer, 0, 0, renderer.size.w, renderer.size.h, 20);
     // Create array of all tilesets and views
     var tilesets = [_]*Tileset{&tileset};
     var views = [_]*View{&view};
@@ -56,8 +56,8 @@ pub fn main() !void {
     var eventMap = std.AutoHashMap(sdl.SDL_EventType, *const fn (sdlEvent: sdl.SDL_Event) []Event).init(allocator);
     defer eventMap.deinit();
 
-    var game = Game.init(allocator, &window, &renderer, &tilesets, &views, &eventMap);
-    defer game.deinit();
+    var game = try Game.init(allocator, &window, &renderer, &tilesets, &views, &eventMap);
+    defer game.deinit(allocator);
     try game.gameLoop();
 
     std.debug.print("works\n", .{});

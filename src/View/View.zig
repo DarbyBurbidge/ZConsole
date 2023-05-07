@@ -37,13 +37,13 @@ pub const View = struct {
     }
 
     // Takes an array of characters and a tileset and populates the View with the associated tiles
-    pub fn setView(self: @This(), renderer: *sdl.SDL_Renderer, tileset: Tileset, tiles: []u8) !void {
+    pub fn setView(self: @This(), renderer: *sdl.SDL_Renderer, tileset: *Tileset, tiles: []u8) !void {
         _ = sdl.SDL_SetRenderTarget(renderer, self.view);
         for (tiles, 0..) |tileVal, i| {
             const tile = try tileset.getTile(tileVal);
-            var size = sdl.SDL_Rect{ .x = @mod(@intCast(c_int, i) * 20, self.size.w), .y = @divFloor(@truncate(u16, i) * 20, self.size.w), .w = tileset.tileSize, .h = tileset.tileSize };
-
-            //std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
+            var size = sdl.SDL_Rect{ .x = @mod(@intCast(c_int, i) * 20, self.size.w), .y = @divFloor(@intCast(c_int, i) * 20, self.size.w) * 20, .w = tileset.tileSize, .h = tileset.tileSize };
+            //std.debug.print("{}\n", .{tileVal});
+            // std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
             _ = sdl.SDL_RenderCopy(renderer, tile, null, &size);
         }
         _ = sdl.SDL_SetRenderTarget(renderer, null);

@@ -34,3 +34,20 @@ pub fn generateStatic(renderer: Renderer, tileset: Tileset) !void {
     Window.renderTexture(renderer.renderer);
     //}
 }
+
+pub fn flattenArray(allocator: std.mem.Allocator, array: [][]u8) ![]u8 {
+    std.debug.print("{}, {}", .{ array.len, array[0].len });
+    var newArray: []u8 = try allocator.alloc(u8, @as(u64, array.len * array[0].len));
+    var index: u32 = 0;
+    for (array) |row| {
+        for (row) |element| {
+            newArray[index] = element;
+            index += 1;
+        }
+    }
+    // for (array) |row| {
+    //     allocator.free(row);
+    // }
+    // allocator.free(array);
+    return newArray;
+}
