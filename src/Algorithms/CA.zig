@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn processMap(map: [][]u8, allocator: std.mem.Allocator) ![][]u8 {
+pub fn processMap(allocator: std.mem.Allocator, map: [][]u8) ![][]u8 {
     var newMap: [][]u8 = try allocator.alloc([]u8, map.len);
     for (newMap) |*row| {
         row.* = try allocator.alloc(u8, map[0].len);

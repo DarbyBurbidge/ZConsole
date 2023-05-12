@@ -18,7 +18,8 @@ const Event = @import("../Input/Event.zig").Event;
 const EventType = @import("../Input/Event.zig").EventType;
 const KeySymbol = @import("../Input/KeyboardData.zig").KeySymbol;
 const KeyState = @import("../Input/KeyboardData.zig").KeyState;
-const CellAuto = @import("../Algorithms/CellularAutomata.zig");
+const CellAuto = @import("../Algorithms/CA.zig");
+const BSPtree = @import("../Algorithms/BSP.zig").BSPtree;
 const flattenArray = @import("../utils.zig").flattenArray;
 
 /// The core Game object. Handles the main game loop
@@ -47,7 +48,7 @@ pub const Game = struct {
         for (map) |*row| {
             row.* = try allocator.alloc(u8, mapWidth);
         }
-        var randGen = std.rand.DefaultPrng.init(234);
+        var generator = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp()));
         print("w: {}, h: {}\n", .{ mapWidth, mapHeight });
         for (0..mapHeight) |y| {
             for (0..mapWidth) |x| {
@@ -55,8 +56,8 @@ pub const Game = struct {
                 if (x == mapWidth - 1) {
                     print("\ny:{}", .{y});
                 }
-                const randomVal = randGen.random().intRangeAtMost(u8, 0, 10);
-                if (randomVal > 3) {
+                const randomVal = generator.random().intRangeAtMost(u8, 0, 20);
+                if (randomVal > 7) {
                     map[y][x] = 0;
                 } else {
                     map[y][x] = 250;
@@ -102,9 +103,13 @@ pub const Game = struct {
         //     self.processGameEvent(event.data);
         // }
         //std.time.sleep(std.time.ns_per_s * 2);
-        self.map = try CellAuto.processMap(self.map, self.allocator);
+        var tree = try BSPtree.init(self.allocator, self.map, 2);
+        _ = tree;
+        self.map = try CellAuto.processMap(self.allocator, self.map);
         var tiles = [8]u8{ 196, 218, 179, 191, 196, 192, 179, 217 };
-        try self.views[0].setView(self.renderer.renderer, self.tilesets[0], try flattenArray(self.allocator, self.map));
+        var flattened = try flattenArray(self.allocator, self.map);
+        defer self.allocator.free(flattened);
+        try self.views[0].setView(self.renderer.renderer, self.tilesets[0], flattened);
         try self.views[0].setBorders(self.renderer.renderer, self.tilesets[0], &tiles);
     }
 

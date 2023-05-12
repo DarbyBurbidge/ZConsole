@@ -45,9 +45,14 @@ pub fn flattenArray(allocator: std.mem.Allocator, array: [][]u8) ![]u8 {
             index += 1;
         }
     }
-    // for (array) |row| {
-    //     allocator.free(row);
-    // }
-    // allocator.free(array);
     return newArray;
+}
+
+const prng = std.rand.DefaultPrng;
+pub fn getNormal() f32 {
+    var gen = prng.init(@intCast(u64, std.time.timestamp()));
+    const u = gen.random().float(f32);
+    const v = gen.random().float(f32);
+    const normal = std.math.sqrt(-2.0 * std.math.log(f32, std.math.e, u)) * std.math.cos(2.0 * std.math.pi * v);
+    return normal;
 }
