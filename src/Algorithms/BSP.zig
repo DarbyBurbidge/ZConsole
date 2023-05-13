@@ -1,13 +1,7 @@
 const std = @import("std");
-// const getNormal = @import("../utils.zig").getNormal;
+const abs = @import("../utils.zig").abs;
+const Rect = @import("../Shapes/Rect.zig");
 const prng = std.rand.DefaultPrng;
-
-const Rect = struct {
-    x: u8,
-    y: u8,
-    w: u8,
-    h: u8,
-};
 
 const Node = struct {
     x: u8,
@@ -103,11 +97,14 @@ const Node = struct {
         }
         var gen = prng.init(@intCast(u64, std.time.timestamp()));
         self.room = try allocator.create(Rect);
+        // Generate new x and y first so we can use them in the new width/height calcs
+        const newW = gen.random().intRangeAtMost(u8, self.minSize, self.w);
+        const newH = gen.random().intRangeAtMost(u8, self.minSize, self.h);
         self.room.?.* = Rect{
-            .x = gen.random().intRangeAtMost(u8, self.x - @divFloor(self.w, 2), self.x + self.w),
-            .y = gen.random().intRangeAtMost(u8, self.y - @divFloor(self.h, 2), self.y + self.h),
-            .w = gen.random().intRangeAtMost(u8, @divFloor(self.minSize, 2), self.w),
-            .h = gen.random().intRangeAtMost(u8, @divFloor(self.minSize, 2), self.h),
+            .x = gen.random().intRangeAtMost(u8, self.x - self.w + newW, self.x + self.w - newW),
+            .y = gen.random().intRangeAtMost(u8, self.y - self.h + newH, self.y + self.h - newH),
+            .w = newW,
+            .h = newH,
         };
     }
 
@@ -115,6 +112,8 @@ const Node = struct {
         if (self.left) |left| if (self.right) |right| {
             var leftRooms = try left.getRooms(allocator);
             var rightRooms = try right.getRooms(allocator);
+            defer allocator.free(leftRooms);
+            defer allocator.free(rightRooms);
             var roomList: []*Rect = try allocator.alloc(*Rect, leftRooms.len + rightRooms.len);
             for (leftRooms, 0..) |room, i| {
                 roomList[i] = room;
@@ -132,6 +131,17 @@ const Node = struct {
             return arrayOfRoomPtr;
         }
         return error.RoomNotInitialized;
+    }
+
+    pub fn dinit(self: *@This(), allocator: std.mem.Allocator) !void {
+        if (self.left) |left| if (self.right) |right| {
+            try left.dinit(allocator);
+            try right.dinit(allocator);
+        };
+        if (self.room) |room| {
+            allocator.destroy(room);
+        }
+        defer allocator.destroy(self);
     }
 };
 
@@ -163,6 +173,10 @@ pub const BSPtree = struct {
     pub fn getRooms(self: *@This()) ![]*Rect {
         return self.root.getRooms(self.allocator);
     }
+
+    pub fn dinit(self: *@This()) !void {
+        try self.root.dinit(self.allocator);
+    }
 };
 
 pub fn getNormal() f32 {
@@ -171,6 +185,27 @@ pub fn getNormal() f32 {
     const v = gen.random().float(f32);
     const normal = std.math.sqrt(-2.0 * std.math.log(f32, std.math.e, u)) * std.math.cos(2.0 * std.math.pi * v);
     return normal;
+}
+
+const sdl = @cImport({
+    @cInclude("SDL.h");
+    @cInclude("SDL_image.h");
+});
+const View = @import("../View/View.zig").View;
+const Tileset = @import("../View/Tileset.zig").Tileset;
+const Renderer = @import("../Renderer/Renderer.zig").Renderer;
+const Texture = @import("../Renderer/Texture.zig").Texture;
+
+pub fn generateRoomTexture(renderer: *Renderer, tileset: *Tileset, roomRect: *Rect) !Texture {
+    var roomTexture = try Texture.init(renderer, roomRect.*, .{ .texture = null });
+    var floorTile = try tileset.getTile(250);
+    for (0..(roomRect.h * 2)) |i| {
+        for (0..(roomRect.w * 2)) |j| {
+            var size = Rect{ .x = roomRect.x - roomRect.w + @truncate(u16, j) * 20, .y = roomRect.y - roomRect.h + @truncate(u16, i) * 20, .w = tileset.tileSize, .h = tileset.tileSize };
+            try renderer.blit(roomTexture, tileset.tileset, .{ .fromSize = &floorTile, .toSize = &size });
+        }
+    }
+    return roomTexture;
 }
 
 test "create rooms" {
@@ -192,8 +227,8 @@ test "create rooms" {
     try tree.generateRooms();
     const rooms = try tree.getRooms();
     std.debug.print("Rooms: {any}\n", .{rooms});
-    for (rooms, 0..) |room, i| {
-        _ = room;
+    for (rooms, 0..) |_, i| {
         std.debug.print("i: {}, Address: {},  Room: {}\n", .{ i, &rooms[i], rooms[i] });
     }
+    try tree.dinit();
 }

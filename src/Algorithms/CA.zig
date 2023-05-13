@@ -11,11 +11,11 @@ pub fn processMap(allocator: std.mem.Allocator, map: [][]u8) ![][]u8 {
             var wallCount: u8 = 0;
             for (neighbors) |neighbor| {
                 std.debug.print("{}", .{neighbor});
-                if (neighbor == 0) wallCount += 1;
+                if (neighbor == 219) wallCount += 1;
             }
             std.debug.print("done\n", .{});
             if (wallCount > 4) {
-                newMap[y][x] = 0;
+                newMap[y][x] = 219;
             } else {
                 newMap[y][x] = 250;
             }
@@ -41,7 +41,7 @@ fn processNeighbors(map: [][]u8, x: u8, y: u8) []u8 {
                 counter += 1;
             } else {
                 // if it doesn't exist, add a wall to the neighbor list
-                list[counter] = 0;
+                list[counter] = 219;
                 counter += 1;
             }
         }

@@ -56,3 +56,7 @@ pub fn getNormal() f32 {
     const normal = std.math.sqrt(-2.0 * std.math.log(f32, std.math.e, u)) * std.math.cos(2.0 * std.math.pi * v);
     return normal;
 }
+
+pub fn abs(a: i16) u8 {
+    return if (a < 0) @intCast(u8, -a) else @intCast(u8, a);
+}

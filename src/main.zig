@@ -43,12 +43,12 @@ pub fn main() !void {
     defer allocator.free(imageFullPath);
 
     // Create tileset from filepath
-    var tileset = try Tileset.init(allocator, renderer.renderer, imageFullPath, 20);
+    var tileset = try Tileset.init(allocator, &renderer, imageFullPath, 20);
     defer tileset.dinit();
     print("Main Count: {}\n", .{tileset.tiles.count()});
 
     // Create ViewPort that covers the top half of the screen
-    var view = try View.init(renderer.renderer, 0, 0, renderer.size.w, renderer.size.h, 20);
+    var view = try View.init(&renderer, 0, 0, renderer.size.w, renderer.size.h, 20);
     // Create array of all tilesets and views
     var tilesets = [_]*Tileset{&tileset};
     var views = [_]*View{&view};

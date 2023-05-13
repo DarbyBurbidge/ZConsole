@@ -20,6 +20,7 @@ const KeySymbol = @import("../Input/KeyboardData.zig").KeySymbol;
 const KeyState = @import("../Input/KeyboardData.zig").KeyState;
 const CellAuto = @import("../Algorithms/CA.zig");
 const BSPtree = @import("../Algorithms/BSP.zig").BSPtree;
+const generateTexture = @import("../Algorithms/BSP.zig").generateRoomTexture;
 const flattenArray = @import("../utils.zig").flattenArray;
 
 /// The core Game object. Handles the main game loop
@@ -58,7 +59,7 @@ pub const Game = struct {
                 }
                 const randomVal = generator.random().intRangeAtMost(u8, 0, 20);
                 if (randomVal > 7) {
-                    map[y][x] = 0;
+                    map[y][x] = 219;
                 } else {
                     map[y][x] = 250;
                 }
@@ -83,7 +84,7 @@ pub const Game = struct {
         while (!self.quit) {
             try self.input();
             try self.update();
-            self.render();
+            try self.render();
         }
     }
 
@@ -104,20 +105,30 @@ pub const Game = struct {
         // }
         //std.time.sleep(std.time.ns_per_s * 2);
         var tree = try BSPtree.init(self.allocator, self.map, 2);
-        _ = tree;
+        _ = try tree.grow(4);
+        try tree.generateRooms();
+        const rooms = try tree.getRooms();
+        defer self.allocator.free(rooms);
+        for (rooms, 0..) |room, i| {
+            std.debug.print("i: {}, Address: {},  Room: {}\n", .{ i, &rooms[i], rooms[i] });
+            var texture = try generateTexture(self.renderer, self.tilesets[0], room);
+            try self.renderer.blit(self.views[0].texture, texture, .{});
+        }
+        try tree.dinit();
         self.map = try CellAuto.processMap(self.allocator, self.map);
         var tiles = [8]u8{ 196, 218, 179, 191, 196, 192, 179, 217 };
+        _ = tiles;
         var flattened = try flattenArray(self.allocator, self.map);
         defer self.allocator.free(flattened);
-        try self.views[0].setView(self.renderer.renderer, self.tilesets[0], flattened);
-        try self.views[0].setBorders(self.renderer.renderer, self.tilesets[0], &tiles);
+        //try self.views[0].setView(self.renderer.renderer, self.tilesets[0], flattened);
+        //try self.views[0].setBorders(self.renderer.renderer, self.tilesets[0], &tiles);
     }
 
-    pub fn render(self: *@This()) void {
+    pub fn render(self: *@This()) !void {
         for (self.views, 0..) |view, i| {
             _ = i;
             // Prepare and render ViewPort
-            try Window.prepareTexture(self.renderer.renderer, view.view, &view.size);
+            try self.renderer.render(view.texture, .{});
             Window.renderTexture(self.renderer.renderer);
             //print("View {}\n", .{i});
         }
