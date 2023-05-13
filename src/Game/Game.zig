@@ -120,7 +120,7 @@ pub const Game = struct {
         _ = tiles;
         var flattened = try flattenArray(self.allocator, self.map);
         defer self.allocator.free(flattened);
-        //try self.views[0].setView(self.renderer.renderer, self.tilesets[0], flattened);
+        try self.views[0].setView(self.renderer, self.tilesets[0], flattened);
         //try self.views[0].setBorders(self.renderer.renderer, self.tilesets[0], &tiles);
     }
 

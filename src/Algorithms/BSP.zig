@@ -202,7 +202,7 @@ pub fn generateRoomTexture(renderer: *Renderer, tileset: *Tileset, roomRect: *Re
     for (0..(roomRect.h * 2)) |i| {
         for (0..(roomRect.w * 2)) |j| {
             var size = Rect{ .x = roomRect.x - roomRect.w + @truncate(u16, j) * 20, .y = roomRect.y - roomRect.h + @truncate(u16, i) * 20, .w = tileset.tileSize, .h = tileset.tileSize };
-            try renderer.blit(roomTexture, tileset.tileset, .{ .fromSize = &floorTile, .toSize = &size });
+            try renderer.blit(roomTexture, tileset.texture, .{ .fromSize = &floorTile, .toSize = &size });
         }
     }
     return roomTexture;

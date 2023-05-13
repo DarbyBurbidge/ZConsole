@@ -17,7 +17,7 @@ const print = std.debug.print;
 const TilesetError = error{ TextureLoad, TileLoad, TileTransfer };
 
 pub const Tileset = struct {
-    tileset: Texture,
+    texture: Texture,
     tiles: std.AutoHashMap(u8, Rect),
     tileSize: u8,
     width: u32,
@@ -94,7 +94,7 @@ pub const Tileset = struct {
         // print("Init scope Count: {}", .{tiles.count()});
         var tilesetSize = sdl.SDL_Rect{ .x = 0, .y = 0, .w = 0, .h = 0 };
 
-        return Tileset{ .tileset = tileset, .tiles = tiles, .width = @intCast(u32, tilesetSize.w), .height = @intCast(u32, tilesetSize.h), .tileSize = tileSize };
+        return Tileset{ .texture = tileset, .tiles = tiles, .width = @intCast(u32, tilesetSize.w), .height = @intCast(u32, tilesetSize.h), .tileSize = tileSize };
     }
 
     pub fn dinit(self: *Tileset) void {

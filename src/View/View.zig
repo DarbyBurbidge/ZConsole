@@ -39,18 +39,17 @@ pub const View = struct {
         return View{ .size = size, .texture = texture };
     }
 
-    // Takes an array of characters and a tileset and populates the View with the associated tiles
-    // pub fn setView(self: @This(), renderer: *Renderer, tileset: *Tileset, tiles: []u8) !void {
-    //     renderer. self.view);
-    //     for (tiles, 0..) |tileVal, i| {
-    //         const tile = try tileset.getTile(tileVal);
-    //         var size = sdl.SDL_Rect{ .x = @mod(@intCast(c_int, i) * 20, self.size.w), .y = @divFloor(@intCast(c_int, i) * 20, self.size.w) * 20, .w = tileset.tileSize, .h = tileset.tileSize };
-    //         //std.debug.print("{}\n", .{tileVal});
-    //         // std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
-    //         _ = sdl.SDL_RenderCopy(renderer, tile, null, &size);
-    //     }
-    //     _ = sdl.SDL_SetRenderTarget(renderer, null);
-    // }
+    //Takes an array of characters and a tileset and populates the View with the associated tiles
+    pub fn setView(self: @This(), renderer: *Renderer, tileset: *Tileset, tiles: []u8) !void {
+        for (tiles, 0..) |tileVal, i| {
+            var tile = try tileset.getTile(tileVal);
+            var size = Rect{ .x = @truncate(u16, @mod(i * tileset.tileSize, self.size.w)), .y = @truncate(u16, @divFloor(i * tileset.tileSize, self.size.w) * tileset.tileSize), .w = tileset.tileSize, .h = tileset.tileSize };
+            //std.debug.print("{}\n", .{tileVal});
+            // std.debug.print("x:{}, y:{}, w:{}, h:{}\n", .{ size.x, size.y, size.w, size.h });
+            try renderer.blit(self.texture, tileset.texture, .{ .fromSize = &tile, .toSize = &size });
+        }
+    }
+
     // Takes an array of tile values and creates a border
     // NOTE: likely to be removed as it is very limited in utility
     // pub fn setBorders(self: *@This(), renderer: *sdl.SDL_Renderer, tileset: *const Tileset, tiles: []u8) !void {
